@@ -16,6 +16,8 @@ public abstract class SubViewHolder<T> extends RecyclerView.ViewHolder {
 
     public abstract void bindData(Context context, T t, int position);
 
+    public abstract void setOnItemClickListener(ItemClickListener listener);
+
     protected <G extends View> G findViewById(View view, int id) {
         return (G) view.findViewById(id);
     }

@@ -9,6 +9,7 @@ import com.bumptech.glide.Glide;
 import com.haishengyue.beanlibrary.mallbeans.MallGoodsBean;
 import com.haishengyue.beanlibrary.mallbeans.MallRecordsBean;
 import com.haishengyue.beanlibrary.mallbeans.tinybean.GoodTinyBean;
+import com.haishengyue.templatelibrary.ItemClickListener;
 import com.haishengyue.templatelibrary.R;
 import com.haishengyue.templatelibrary.SubViewHolder;
 
@@ -18,13 +19,17 @@ import com.haishengyue.templatelibrary.SubViewHolder;
  * 单个商品的 item
  */
 
-public class SingleGoodsHolder<T> extends SubViewHolder<T> {
+public class SingleGoodsHolder<T> extends SubViewHolder<T> implements View.OnClickListener, View.OnLongClickListener {
 
-    ImageView goodsIcon;
-    TextView goodsDec;
-    TextView goodsSubDec;
-    TextView goodsSubDec2;
-    TextView goodsBtn;
+    private ImageView goodsIcon;
+    private TextView goodsDec;
+    private TextView goodsSubDec;
+    private TextView goodsSubDec2;
+    private TextView goodsBtn;
+
+    private ItemClickListener mListener;
+    private int mPosition;
+    private T mData;
 
     public SingleGoodsHolder(View itemView) {
         super(itemView);
@@ -33,12 +38,16 @@ public class SingleGoodsHolder<T> extends SubViewHolder<T> {
         goodsSubDec = findViewById(itemView, R.id.goods_sub_dec);
         goodsSubDec2 = findViewById(itemView, R.id.goods_sub_dec2);
         goodsBtn = findViewById(itemView, R.id.goods_btn);
+        itemView.setOnClickListener(this);
+        itemView.setOnLongClickListener(this);
 
     }
 
     @Override
     public void bindData(Context context, T t, int position) {
-        if(t instanceof MallRecordsBean){
+        this.mPosition = position;
+        this.mData = t;
+        if (t instanceof MallRecordsBean) {
             MallRecordsBean bean = (MallRecordsBean) t;
             MallGoodsBean goods = bean.getGoods();
             Glide.with(context).load(goods.getLogo().getUrl()).into(goodsIcon);
@@ -46,7 +55,7 @@ public class SingleGoodsHolder<T> extends SubViewHolder<T> {
             goodsSubDec.setText(goods.getPrice());
             goodsSubDec2.setText(goods.getOldPrice());
         }
-        if(t instanceof GoodTinyBean){
+        if (t instanceof GoodTinyBean) {
             GoodTinyBean bean = (GoodTinyBean) t;
             Glide.with(context).load(bean.getUrl()).into(goodsIcon);
             goodsDec.setText(bean.getName());
@@ -55,5 +64,23 @@ public class SingleGoodsHolder<T> extends SubViewHolder<T> {
         }
 
 
+    }
+
+    @Override
+    public void setOnItemClickListener(ItemClickListener listener) {
+        this.mListener = listener;
+    }
+
+
+    @Override
+    public void onClick(View v) {
+        if (mListener != null) {
+            mListener.onItemClick(v, mData, mPosition);
+        }
+    }
+
+    @Override
+    public boolean onLongClick(View v) {
+        return mListener != null && mListener.onItemLongClick(v, mData, mPosition);
     }
 }

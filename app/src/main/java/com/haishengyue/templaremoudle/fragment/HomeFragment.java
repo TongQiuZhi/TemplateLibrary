@@ -45,11 +45,9 @@ public class HomeFragment extends BaseFragment {
 
         DelegateAdapter delegateAdapter = new DelegateAdapter(layoutManager, false);
         mRecyclerView.setAdapter(delegateAdapter);
-//TODO 这里实现 item 为recyclerView
+
+
         delegateAdapter.addAdapter(new MyAdapter(mContext, new DefaultLayoutHelper(), 5));
-        delegateAdapter.addAdapter(new MyAdapter2(mContext, new DefaultLayoutHelper(), 1));
-
-
 
     }
 
@@ -166,41 +164,6 @@ public class HomeFragment extends BaseFragment {
         @Override
         public boolean isViewFromObject(View view, Object object) {
             return view == object;
-        }
-    }
-
-    //这里测试 水平滑动  TODO  待测试
-    class MyAdapter2 extends DelegateAdapter.Adapter<MyViewHolder> {
-        private final Context mContext;
-        private final LayoutHelper mHelper;
-        private final int mCount;
-
-        public MyAdapter2(Context context, LayoutHelper helper, int count) {
-            this.mContext = context;
-            this.mHelper = helper;
-            this.mCount = count;
-        }
-
-        @Override
-        public LayoutHelper onCreateLayoutHelper() {
-            return mHelper;
-        }
-
-        @Override
-        public MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            return new MyViewHolder(LayoutInflater.from(mContext).inflate(R.layout.fragment_home, parent, false));
-        }
-
-        @Override
-        public void onBindViewHolder(MyViewHolder holder, int position) {
-            holder.itemView.setLayoutParams(new VirtualLayoutManager.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 300));
-            holder.itemView.setBackgroundColor(0xff889900);
-
-        }
-
-        @Override
-        public int getItemCount() {
-            return 2;
         }
     }
 

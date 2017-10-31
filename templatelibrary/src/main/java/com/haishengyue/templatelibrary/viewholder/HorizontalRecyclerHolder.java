@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 
 import com.haishengyue.beanlibrary.mallbeans.DataBean;
 import com.haishengyue.beanlibrary.mallbeans.TinyDataBean;
+import com.haishengyue.templatelibrary.ItemClickListener;
 import com.haishengyue.templatelibrary.SubViewHolder;
 import com.haishengyue.templatelibrary.factory.SingleGoodsLittleTemplateFactory;
 
@@ -31,26 +32,35 @@ public class HorizontalRecyclerHolder extends SubViewHolder<DataBean> {
         itemView.setBackgroundColor(0xff00ff00);
         LinearLayoutManager manager = new LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false);
         recyclerView.setLayoutManager(manager);
-        recyclerView.addItemDecoration(new RecyclerView.ItemDecoration(){
+        recyclerView.addItemDecoration(new RecyclerView.ItemDecoration() {
             @Override
             public void getItemOffsets(Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
-//                outRect.set(4,4,4,4);
+//                outRect.set(4,4,4,4);//这个方法多次调用 会叠加
             }
 
         });
-        MyAdapter adapter = new MyAdapter(context,t.getDatas());
+        MyAdapter adapter = new MyAdapter(context, t.getDatas());
         recyclerView.setAdapter(adapter);
 
     }
 
-    class MyAdapter extends RecyclerView.Adapter<SingleGoodsHolder>{
+    @Override
+    public void setOnItemClickListener(ItemClickListener listener) {
+        this.mListener = listener;
+    }
+
+    private ItemClickListener mListener;
+
+    class MyAdapter extends RecyclerView.Adapter<SingleGoodsHolder> {
         Context context;
         List<TinyDataBean> list;
 
-        MyAdapter(Context context, List<TinyDataBean> list){
+
+        MyAdapter(Context context, List<TinyDataBean> list) {
             this.context = context;
             this.list = list;
         }
+
         @Override
         public SingleGoodsHolder onCreateViewHolder(ViewGroup parent, int viewType) {
             return (SingleGoodsHolder) new SingleGoodsLittleTemplateFactory().getViewHolder(context);
@@ -58,8 +68,9 @@ public class HorizontalRecyclerHolder extends SubViewHolder<DataBean> {
 
         @Override
         public void onBindViewHolder(SingleGoodsHolder holder, int position) {
+            holder.setOnItemClickListener(mListener);
             holder.itemView.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, 400));
-            holder.bindData(context,list.get(position),position);//这个 需要里面再次设置
+            holder.bindData(context, list.get(position), position);//这个 需要里面再次设置
         }
 
         @Override

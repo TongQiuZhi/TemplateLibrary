@@ -22,7 +22,7 @@ public class SubAdapter<T> extends DelegateAdapter.Adapter<SubViewHolder> {
     private int type;//默认类型设置
 
     public SubAdapter(Context context, LayoutHelper helper, List<T> datas) {
-        this(context, helper, datas, datas.size(), 1);
+        this(context, helper, datas, datas.size(), 0);
     }
 
     public SubAdapter(Context context, LayoutHelper helper, List<T> datas, int itemCount, int type) {

@@ -1,10 +1,13 @@
 package com.haishengyue.templaremoudle.fragment;
 
 import android.content.Context;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.View;
+import android.widget.Toast;
 
 import com.alibaba.android.vlayout.DelegateAdapter;
 import com.alibaba.android.vlayout.VirtualLayoutManager;
@@ -37,27 +40,65 @@ import java.util.Map;
 
 public class NotificationsFragment extends BaseFragment {
 
+    private SwipeRefreshLayout mSwipeRefreshLayout;
     private RecyclerView mRecyclerView;
     private DelegateAdapter mDelegateAdapter;
     private SubAdapter customAdapter;
+    private VirtualLayoutManager manager;
 
     @Override
     protected void initView(View view) {
         mRecyclerView = findViewById(view, R.id.recyclerView);
-        VirtualLayoutManager manager = new VirtualLayoutManager(mContext);
+        mSwipeRefreshLayout = findViewById(view, R.id.swipe_refresh_layout);
+        mSwipeRefreshLayout.setColorSchemeColors(0xff337733, 0xff772288, 0xff991100, 0xff88ff77);
+        manager = new VirtualLayoutManager(mContext);
         mRecyclerView.setLayoutManager(manager);
         mDelegateAdapter = new DelegateAdapter(manager, false);
         mRecyclerView.setAdapter(mDelegateAdapter);
-
+        initListener();
         initData();
+
+    }
+
+    private void initListener() {
+        mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                Toast.makeText(mContext, "onRefresh", Toast.LENGTH_SHORT).show();
+                mContext.getWindow().getDecorView().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        mSwipeRefreshLayout.setRefreshing(false);
+                    }
+                }, 5000);
+            }
+        });
+
+        mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+                super.onScrollStateChanged(recyclerView, newState);
+                Log.e("NO", "newState == " + newState);
+
+                if (newState == RecyclerView.SCROLL_STATE_IDLE) {
+                    int p = manager.findLastVisibleItemPosition();
+                    int childCount = manager.getItemCount();
+                    Log.e("NO", "p == " + p + ", childCount = " + childCount);
+                    if (p >= childCount - 2) {
+                        Toast.makeText(mContext, "isLoadMore", Toast.LENGTH_SHORT).show();
+                    }
+
+                }
+
+            }
+        });
 
     }
 
     private List<DataBean> dataBeen;
 
     private void initData() {
-        String url = "http://ss-www.oss-cn-hangzhou.aliyuncs.com/api/result.json";
-        url = "http://ceng.heysound.com:4000/api/test/result";
+        String url = "http://ceng.heysound.com:4000/api/test/result";
         try {
             HttpUtils.get(NotificationsFragment.this, url, null, new HttpCallBack() {
                 @Override
@@ -94,7 +135,23 @@ public class NotificationsFragment extends BaseFragment {
             String template_type = bean.getTemplate_type();
             if (TextUtils.isEmpty(template_type)) template_type = "0";
             switch (Integer.parseInt(template_type)) {
+                case 15:
+                case 5://模板5
+                    SingleLayoutHelper singleLayoutHelper5 = new SingleLayoutHelper();
+                    singleLayoutHelper5.setBgColor(0xffffffff);
+                    List<DataBean> list5 = new ArrayList<>();
+                    list5.add(bean);
+                    adapters.add(new SubAdapter<>(mContext, singleLayoutHelper5, list5));
+                    adapters.add(new SubAdapter<>(mContext, new DefaultLayoutHelper(), bean.getDatas(), 1, 5));
+                    adapters.add(new SubAdapter<>(mContext, new DefaultLayoutHelper(), list5, 1, 3));
+
+                    break;
                 case 1://banner
+                    SingleLayoutHelper singleLayoutHelper4 = new SingleLayoutHelper();
+                    singleLayoutHelper4.setBgColor(0xffffffff);
+                    List<DataBean> list2 = new ArrayList<>();
+                    list2.add(bean);
+                    adapters.add(new SubAdapter<>(mContext, new DefaultLayoutHelper(), list2, 1, 1));
                     break;
                 case 2://channel
                     SingleLayoutHelper singleLayoutHelper2 = new SingleLayoutHelper();
@@ -118,9 +175,8 @@ public class NotificationsFragment extends BaseFragment {
                     list.add(bean);
                     adapters.add(new SubAdapter<>(mContext, singleLayoutHelper3, list));
 
-
                     //1.先确认出一个单行的view 2.单行view 里面是一个recyclerview 3.设置这个recyclerView
-                    SubAdapter adapter = new SubAdapter<>(mContext,new DefaultLayoutHelper(),list,1 ,3);
+                    SubAdapter adapter = new SubAdapter<>(mContext, new DefaultLayoutHelper(), list, 1, 3);
                     adapters.add(adapter);
 
                     break;
@@ -162,6 +218,7 @@ public class NotificationsFragment extends BaseFragment {
                         }
                     });
                     break;
+
             }
         }
         mDelegateAdapter.addAdapters(adapters);
