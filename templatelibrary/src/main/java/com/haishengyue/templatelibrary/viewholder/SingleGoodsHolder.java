@@ -6,12 +6,10 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
-import com.haishengyue.beanlibrary.mallbeans.MallGoodsBean;
-import com.haishengyue.beanlibrary.mallbeans.MallRecordsBean;
-import com.haishengyue.beanlibrary.mallbeans.tinybean.GoodTinyBean;
-import com.haishengyue.templatelibrary.ItemClickListener;
 import com.haishengyue.templatelibrary.R;
-import com.haishengyue.templatelibrary.SubViewHolder;
+import com.haishengyue.templatelibrary.base.SubViewHolder;
+import com.haishengyue.templatelibrary.entity.GoodsEntity;
+import com.haishengyue.templatelibrary.interfaces.ItemClickListener;
 
 
 /**
@@ -19,7 +17,7 @@ import com.haishengyue.templatelibrary.SubViewHolder;
  * 单个商品的 item
  */
 
-public class SingleGoodsHolder<T> extends SubViewHolder<T> implements View.OnClickListener, View.OnLongClickListener {
+public class SingleGoodsHolder extends SubViewHolder<GoodsEntity> {
 
     private ImageView goodsIcon;
     private TextView goodsDec;
@@ -29,7 +27,7 @@ public class SingleGoodsHolder<T> extends SubViewHolder<T> implements View.OnCli
 
     private ItemClickListener mListener;
     private int mPosition;
-    private T mData;
+    private GoodsEntity mData;
 
     public SingleGoodsHolder(View itemView) {
         super(itemView);
@@ -44,25 +42,14 @@ public class SingleGoodsHolder<T> extends SubViewHolder<T> implements View.OnCli
     }
 
     @Override
-    public void bindData(Context context, T t, int position) {
+    public void bindData(Context context, GoodsEntity entity, int position) {
         this.mPosition = position;
-        this.mData = t;
-        if (t instanceof MallRecordsBean) {
-            MallRecordsBean bean = (MallRecordsBean) t;
-            MallGoodsBean goods = bean.getGoods();
-            Glide.with(context).load(goods.getLogo().getUrl()).into(goodsIcon);
-            goodsDec.setText(goods.getName());
-            goodsSubDec.setText(goods.getPrice());
-            goodsSubDec2.setText(goods.getOldPrice());
-        }
-        if (t instanceof GoodTinyBean) {
-            GoodTinyBean bean = (GoodTinyBean) t;
-            Glide.with(context).load(bean.getUrl()).into(goodsIcon);
-            goodsDec.setText(bean.getName());
-            goodsSubDec.setText(bean.getPrice());
-            goodsSubDec2.setText(bean.getOldPrice());
-        }
-
+        this.mData = entity;
+        Glide.with(context).load(entity.getGoodsUrl()).into(goodsIcon);
+        goodsDec.setText(entity.getGoodsName());
+        goodsSubDec.setText(entity.getPrice());
+        goodsSubDec2.setText(entity.getProfit());
+        goodsBtn.setText(entity.getBtn());
 
     }
 

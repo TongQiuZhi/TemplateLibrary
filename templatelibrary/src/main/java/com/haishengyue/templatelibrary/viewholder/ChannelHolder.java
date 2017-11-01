@@ -6,10 +6,10 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
-import com.haishengyue.beanlibrary.mallbeans.tinybean.ChannelTinyBean;
-import com.haishengyue.templatelibrary.ItemClickListener;
 import com.haishengyue.templatelibrary.R;
-import com.haishengyue.templatelibrary.SubViewHolder;
+import com.haishengyue.templatelibrary.base.SubViewHolder;
+import com.haishengyue.templatelibrary.entity.ChannelEntity;
+import com.haishengyue.templatelibrary.interfaces.ItemClickListener;
 
 /**
  * Created by kanke on 2017/10/23.
@@ -17,12 +17,12 @@ import com.haishengyue.templatelibrary.SubViewHolder;
  * 显示渠道样式  只有一个 图片和文本
  */
 
-public class ChannelHolder extends SubViewHolder<ChannelTinyBean> implements View.OnClickListener, View.OnLongClickListener {
+public class ChannelHolder extends SubViewHolder<ChannelEntity> {
     private TextView channelName;
     private ImageView channelIcon;
     private ItemClickListener mListener;
     private int mPosition;
-    private ChannelTinyBean mData;
+    private ChannelEntity mData;
 
     public ChannelHolder(View itemView) {
         super(itemView);
@@ -33,14 +33,11 @@ public class ChannelHolder extends SubViewHolder<ChannelTinyBean> implements Vie
     }
 
     @Override
-    public void bindData(Context context, ChannelTinyBean tinyDataBean, int position) {
+    public void bindData(Context context, ChannelEntity entity, int position) {
         mPosition = position;
-        this.mData = tinyDataBean;
-        if (tinyDataBean instanceof ChannelTinyBean) {
-            ChannelTinyBean bean = (ChannelTinyBean) tinyDataBean;
-            channelName.setText(bean.getChannel_name());
-            Glide.with(context).load(bean.getIcon_url()).into(channelIcon);
-        }
+        this.mData = entity;
+        channelName.setText(entity.getChannelName());
+        Glide.with(context).load(entity.getChannelUrl()).into(channelIcon);
     }
 
     @Override

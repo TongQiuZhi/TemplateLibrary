@@ -12,15 +12,13 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
-import com.haishengyue.beanlibrary.mallbeans.DataBean;
-import com.haishengyue.beanlibrary.mallbeans.TinyDataBean;
-import com.haishengyue.beanlibrary.mallbeans.tinybean.BannerTinyBean;
-import com.haishengyue.templatelibrary.ItemClickListener;
 import com.haishengyue.templatelibrary.R;
-import com.haishengyue.templatelibrary.SubViewHolder;
+import com.haishengyue.templatelibrary.base.SubViewHolder;
+import com.haishengyue.templatelibrary.entity.BannerEntity;
+import com.haishengyue.templatelibrary.entity.BaseEntity;
+import com.haishengyue.templatelibrary.entity.SetEntity;
+import com.haishengyue.templatelibrary.interfaces.ItemClickListener;
 import com.tmall.ultraviewpager.UltraViewPager;
-import com.tmall.ultraviewpager.transformer.UltraDepthScaleTransformer;
-import com.tmall.ultraviewpager.transformer.UltraScaleTransformer;
 
 import java.util.List;
 
@@ -28,73 +26,84 @@ import java.util.List;
  * Created by kanke on 2017/10/30.
  */
 
-public class UltraViewPagerHolder<T> extends SubViewHolder<T> {
+public class UltraViewPagerHolder extends SubViewHolder<SetEntity> {
     private Context mContext;
+    private ItemClickListener mListener;
 
     public UltraViewPagerHolder(View itemView) {
         super(itemView);
     }
 
     @Override
-    public void bindData(Context context, T t, int position) {
-        if (t instanceof DataBean) {
-            List<TinyDataBean> datas = ((DataBean) t).getDatas();
+    public void bindData(Context context, SetEntity entity, int position) {
+        mContext = context;
+        UltraViewPager ultraViewPager = (UltraViewPager) itemView;
 
-            mContext = context;
-            UltraViewPager ultraViewPager = (UltraViewPager) itemView;
-
-            ultraViewPager.setAdapter(new MyPagerAdapter(datas));
-            ultraViewPager.initIndicator();
+        ultraViewPager.setAdapter(new MyPagerAdapter(entity.getList()));
+        ultraViewPager.initIndicator();
 //设置indicator样式
-            ultraViewPager.getIndicator()
-                    .setOrientation(UltraViewPager.Orientation.HORIZONTAL)
-                    .setFocusColor(Color.GREEN)
-                    .setNormalColor(Color.WHITE)
-                    .setMargin(0,0,0,5)
-                    .setRadius((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 5, context.getResources().getDisplayMetrics()));
+        ultraViewPager.getIndicator()
+                .setOrientation(UltraViewPager.Orientation.HORIZONTAL)
+                .setFocusColor(Color.GREEN)
+                .setNormalColor(Color.WHITE)
+                .setMargin(0, 0, 0, 5)
+                .setRadius((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 5, context.getResources().getDisplayMetrics()));
 //设置indicator对齐方式
-            ultraViewPager.getIndicator().setGravity(Gravity.CENTER_HORIZONTAL | Gravity.BOTTOM);
+        ultraViewPager.getIndicator().setGravity(Gravity.CENTER_HORIZONTAL | Gravity.BOTTOM);
 //构造indicator,绑定到UltraViewPager
-            ultraViewPager.getIndicator().build();
+        ultraViewPager.getIndicator().build();
 
-            ultraViewPager.setAutoScroll(2000);
-            ultraViewPager.setInfiniteLoop(true);
-            ultraViewPager.setMultiScreen(1f);
-            //下面两行代码 是切换的状态
+        ultraViewPager.setAutoScroll(2000);
+        ultraViewPager.setInfiniteLoop(true);
+        ultraViewPager.setMultiScreen(1f);
+        //下面两行代码 是切换的状态
 //            ultraViewPager.setPageTransformer(true, new UltraDepthScaleTransformer());
 //            ultraViewPager.setPageTransformer(false, new UltraScaleTransformer());
-            ultraViewPager.setScrollMode(UltraViewPager.ScrollMode.HORIZONTAL);
-        }
-
+        ultraViewPager.setScrollMode(UltraViewPager.ScrollMode.HORIZONTAL);
 
     }
 
     @Override
     public void setOnItemClickListener(ItemClickListener listener) {
+        this.mListener = listener;
+    }
+
+    @Override
+    public void onClick(View v) {
 
     }
 
-    class MyPagerAdapter extends PagerAdapter {
+    @Override
+    public boolean onLongClick(View v) {
+        return false;
+    }
 
-        List mData;
+    private class MyPagerAdapter extends PagerAdapter implements View.OnClickListener {
 
-        MyPagerAdapter(List list) {
+        List<BaseEntity> mData;
+        BaseEntity entity;
+        int position;
+
+        MyPagerAdapter(List<BaseEntity> list) {
             this.mData = list;
         }
 
         @Override
         public Object instantiateItem(ViewGroup container, int position) {
-            View cardView = LayoutInflater.from(mContext).inflate(R.layout.lish_item_default_image, null);
-            TextView text = (TextView) cardView.findViewById(R.id.text);
-            text.setText("position = " + position);
-            ImageView icon = (ImageView) cardView.findViewById(R.id.icon);//TODO 待设置
-            Object o = mData.get(position);
-            if(o instanceof BannerTinyBean){
-                Glide.with(mContext).load(((BannerTinyBean) o).getPic()).into(icon);
-            }
+            View itemView = LayoutInflater.from(mContext).inflate(R.layout.lish_item_default_image, null);
 
-            container.addView(cardView);//这一行不能少
-            return cardView;
+            this.entity = mData.get(position);
+            this.position = position;
+            itemView.setOnClickListener(this);
+
+            TextView text = (TextView) itemView.findViewById(R.id.text);
+            text.setText("position = " + position);
+            ImageView icon = (ImageView) itemView.findViewById(R.id.icon);
+            if (entity instanceof BannerEntity) {
+                Glide.with(mContext).load(((BannerEntity) entity).getBannerUrl()).into(icon);
+            }
+            container.addView(itemView);//这一行不能少
+            return itemView;
         }
 
         @Override
@@ -110,6 +119,12 @@ public class UltraViewPagerHolder<T> extends SubViewHolder<T> {
         @Override
         public boolean isViewFromObject(View view, Object object) {
             return view == object;
+        }
+
+        @Override
+        public void onClick(View v) {
+            if (mListener != null)
+                mListener.onItemClick(v, entity, position);
         }
     }
 

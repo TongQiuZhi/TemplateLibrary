@@ -1,35 +1,44 @@
 package com.haishengyue.templaremoudle.fragment;
 
-import android.content.Context;
+import android.support.annotation.NonNull;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
-import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
 import com.alibaba.android.vlayout.DelegateAdapter;
 import com.alibaba.android.vlayout.VirtualLayoutManager;
-import com.alibaba.android.vlayout.layout.DefaultLayoutHelper;
-import com.alibaba.android.vlayout.layout.GridLayoutHelper;
-import com.alibaba.android.vlayout.layout.SingleLayoutHelper;
-import com.alibaba.android.vlayout.layout.StaggeredGridLayoutHelper;
 import com.haishengyue.beanlibrary.mallbeans.DataBean;
+import com.haishengyue.beanlibrary.mallbeans.MallGoodsBean;
 import com.haishengyue.beanlibrary.mallbeans.MallRecordsBean;
 import com.haishengyue.beanlibrary.mallbeans.ResMallHome;
 import com.haishengyue.beanlibrary.mallbeans.TinyDataBean;
+import com.haishengyue.beanlibrary.mallbeans.tinybean.BannerTinyBean;
+import com.haishengyue.beanlibrary.mallbeans.tinybean.ChannelTinyBean;
+import com.haishengyue.beanlibrary.mallbeans.tinybean.GoodTinyBean;
 import com.haishengyue.templaremoudle.R;
-import com.haishengyue.templaremoudle.notification.SubAdapter;
 import com.haishengyue.templaremoudle.testData.DecodeUtils;
 import com.haishengyue.templaremoudle.testData.net.HttpCallBack;
 import com.haishengyue.templaremoudle.testData.net.HttpUtils;
+import com.haishengyue.templatelibrary.SubAdapter;
+import com.haishengyue.templatelibrary.TemplateUtils;
+import com.haishengyue.templatelibrary.entity.BannerEntity;
+import com.haishengyue.templatelibrary.entity.BaseEntity;
+import com.haishengyue.templatelibrary.entity.ChannelEntity;
+import com.haishengyue.templatelibrary.entity.GoodsEntity;
+import com.haishengyue.templatelibrary.entity.SetEntity;
+import com.haishengyue.templatelibrary.entity.TitleEntity;
+import com.haishengyue.templatelibrary.interfaces.ItemClickListener;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+
+import static com.haishengyue.templatelibrary.SubAdapter.TYPE_HOLDER_LITTLE_GOODS;
 
 /**
  * Created by kanke on 2017/10/18.
@@ -43,8 +52,8 @@ public class NotificationsFragment extends BaseFragment {
     private SwipeRefreshLayout mSwipeRefreshLayout;
     private RecyclerView mRecyclerView;
     private DelegateAdapter mDelegateAdapter;
-    private SubAdapter customAdapter;
     private VirtualLayoutManager manager;
+    private SubAdapter subAdapter;
 
     @Override
     protected void initView(View view) {
@@ -130,98 +139,155 @@ public class NotificationsFragment extends BaseFragment {
         mRecyclerView.setRecycledViewPool(viewPool);
         viewPool.setMaxRecycledViews(0, 20);
 
+        TemplateUtils utils = new TemplateUtils(mContext);
         final LinkedList<DelegateAdapter.Adapter> adapters = new LinkedList<>();
-        if (dataBeen != null && dataBeen.size() > 0) for (final DataBean bean : dataBeen) {
-            String template_type = bean.getTemplate_type();
-            if (TextUtils.isEmpty(template_type)) template_type = "0";
-            switch (Integer.parseInt(template_type)) {
-                case 15:
-                case 5://模板5
-                    SingleLayoutHelper singleLayoutHelper5 = new SingleLayoutHelper();
-                    singleLayoutHelper5.setBgColor(0xffffffff);
-                    List<DataBean> list5 = new ArrayList<>();
-                    list5.add(bean);
-                    adapters.add(new SubAdapter<>(mContext, singleLayoutHelper5, list5));
-                    adapters.add(new SubAdapter<>(mContext, new DefaultLayoutHelper(), bean.getDatas(), 1, 5));
-                    adapters.add(new SubAdapter<>(mContext, new DefaultLayoutHelper(), list5, 1, 3));
 
-                    break;
-                case 1://banner
-                    SingleLayoutHelper singleLayoutHelper4 = new SingleLayoutHelper();
-                    singleLayoutHelper4.setBgColor(0xffffffff);
-                    List<DataBean> list2 = new ArrayList<>();
-                    list2.add(bean);
-                    adapters.add(new SubAdapter<>(mContext, new DefaultLayoutHelper(), list2, 1, 1));
-                    break;
-                case 2://channel
-                    SingleLayoutHelper singleLayoutHelper2 = new SingleLayoutHelper();
-                    singleLayoutHelper2.setBgColor(0xffffffff);
-                    List<DataBean> list = new ArrayList<>();
-                    list.add(bean);
-                    adapters.add(new SubAdapter<>(mContext, singleLayoutHelper2, list));
+        if (dataBeen != null && dataBeen.size() > 0)
+            for (final DataBean bean : dataBeen) {
+                String template_type = bean.getTemplate_type();
+                if (TextUtils.isEmpty(template_type)) template_type = "0";
+                switch (Integer.parseInt(template_type)) {
+                    case 15:
+//                        adapters.add(utils.initTitle(getTitleEntities(bean)));
+                        //这里通用需要异步设置数据   拼接的样式 TODO 实现不了
+                        // 解决方案 ：此模板 按照两个模板返回 一个模板只显示一个大图，另一个模板显示水平列表
 
-                    List<TinyDataBean> datas = bean.getDatas();
-                    GridLayoutHelper gridLayoutHelper = new GridLayoutHelper(5);
-                    gridLayoutHelper.setBgColor(0xffffffff);
-                    gridLayoutHelper.setAutoExpand(false);
-                    gridLayoutHelper.setMarginBottom(10);//TODO 10或者更多的时候，需要自己构建 第10个数据
-                    int num = datas.size() > 10 ? 10 : datas.size();
-                    adapters.add(new SubAdapter<>(mContext, gridLayoutHelper, datas, num, 2));
-                    break;
-                case 3://水平显示
-                    SingleLayoutHelper singleLayoutHelper3 = new SingleLayoutHelper();
-                    singleLayoutHelper3.setBgColor(0xffffffff);
-                    list = new ArrayList<>();
-                    list.add(bean);
-                    adapters.add(new SubAdapter<>(mContext, singleLayoutHelper3, list));
 
-                    //1.先确认出一个单行的view 2.单行view 里面是一个recyclerview 3.设置这个recyclerView
-                    SubAdapter adapter = new SubAdapter<>(mContext, new DefaultLayoutHelper(), list, 1, 3);
-                    adapters.add(adapter);
+                        break;
+                    case 1://banner
+//                        adapters.add(utils.initTitle(getTitleEntities(bean)));
 
-                    break;
-                case 4://goods
-                    SingleLayoutHelper singleLayoutHelper = new SingleLayoutHelper();
-                    singleLayoutHelper.setBgColor(0xffffffff);
-                    list = new ArrayList<>();
-                    list.add(bean);
-                    adapters.add(new SubAdapter<>(mContext, singleLayoutHelper, list));
-                    //
-                    StaggeredGridLayoutHelper staggeredGridLayoutHelper = new StaggeredGridLayoutHelper(2, dp2px(mContext, 10));
-                    staggeredGridLayoutHelper.setBgColor(0xffffffff);
-                    staggeredGridLayoutHelper.setMargin(dp2px(mContext, 10), 0, dp2px(mContext, 10), 0);
-                    final List<MallRecordsBean> records = new ArrayList<>();
-                    customAdapter = new SubAdapter<>(mContext, staggeredGridLayoutHelper, records, 0, 4);
-                    adapters.add(customAdapter);
+                        adapters.add(utils.initBanner(getSetEntities("banner", bean)));
+                        break;
+                    case 2://channel
+//                        adapters.add(utils.initTitle(getTitleEntities(bean)));
 
-                    //TODO 还有一系列的判断条件
-                    //"page":{"no":0,"size":1000}
-                    HashMap<String, Object> map = new HashMap<>();
-                    map.put("no", 0);
-                    map.put("size", 20);
-                    HashMap<String, Object> map2 = new HashMap<>();
-                    map2.put("page", map);
-                    Map<String, Object> stringObjectMap = HttpUtils.sortMapByKey(map2);
-                    final String s = HttpUtils.sortMapByKey2String(stringObjectMap);
+                        adapters.add(utils.initChannel(getMoreEntities(bean)));
 
-                    HttpUtils.post(this, "http://test.heysound.com/goods/listRc.do", null, null, s, new HttpCallBack() {
-                        @Override
-                        public void onSuccess(String msg, String data) {
-                            ResMallHome resMallHome = DecodeUtils.JsonToBean(data, ResMallHome.class);
-                            List<MallRecordsBean> records = resMallHome.getResult().getRecords();
-                            customAdapter.add(records);
-                        }
+                        break;
+                    case 3://水平显示
+                        adapters.add(utils.initTitle(getTitleEntities(bean)));
 
-                        @Override
-                        public void onFailure(String msg) {
+                        adapters.add(utils.initHorizontal(getSetEntities("水平", bean), TYPE_HOLDER_LITTLE_GOODS));
 
-                        }
-                    });
-                    break;
+                        break;
+                    case 4://goods
+                        adapters.add(utils.initTitle(getTitleEntities(bean)));
 
+                        subAdapter = utils.initGridLayout(getMoreEntities(bean), 2);
+                        adapters.add(subAdapter);
+
+
+                        //TODO 还有一系列的判断条件
+                        //"page":{"no":0,"size":1000}
+                        HashMap<String, Object> map = new HashMap<>();
+                        map.put("no", 0);
+                        map.put("size", 20);
+                        HashMap<String, Object> map2 = new HashMap<>();
+                        map2.put("page", map);
+                        Map<String, Object> stringObjectMap = HttpUtils.sortMapByKey(map2);
+                        final String s = HttpUtils.sortMapByKey2String(stringObjectMap);
+
+                        HttpUtils.post(this, "http://test.heysound.com/goods/listRc.do", null, null, s, new HttpCallBack() {
+                            @Override
+                            public void onSuccess(String msg, String data) {
+                                ResMallHome resMallHome = DecodeUtils.JsonToBean(data, ResMallHome.class);
+                                List<MallRecordsBean> records = resMallHome.getResult().getRecords();
+
+                                List<BaseEntity> list4 = new ArrayList<>();
+                                for (MallRecordsBean b : records) {
+                                    MallGoodsBean goods = b.getGoods();
+                                    GoodsEntity goodsEntity = new GoodsEntity(goods.getName(), goods.getLogo().getUrl(), "抢购", goods.getPrice(), goods.getOldPrice(), true);
+                                    list4.add(goodsEntity);
+                                }
+                                subAdapter.add(list4);
+                            }
+
+                            @Override
+                            public void onFailure(String msg) {
+
+                            }
+                        });
+                        break;
+
+                }
+            }
+        int m = adapters.size();
+        for (; ; ) {
+            m--;
+            if (m < 0) {
+                break;
+            }
+            SubAdapter adapter = (SubAdapter) adapters.get(m);
+            adapter.setOnItemClickListener(new ItemClickListener() {
+
+                @Override
+                public void onItemClick(View view, BaseEntity t, int position) {
+                    if (t instanceof ChannelEntity) {
+                        Object dec = t.params.get("dec");
+                        Toast.makeText(mContext, dec.toString(), Toast.LENGTH_SHORT).show();
+                    } else
+                        Toast.makeText(mContext, "position = " + position, Toast.LENGTH_SHORT).show();
+                }
+
+                @Override
+                public boolean onItemLongClick(View view, BaseEntity t, int position) {
+                    return false;
+                }
+            });
+        }
+
+        mDelegateAdapter.addAdapters(adapters);
+    }
+
+    @NonNull
+    private List<BaseEntity> getMoreEntities(DataBean bean) {
+        List<BaseEntity> list = new ArrayList<>();
+        List<TinyDataBean> datas = bean.getDatas();
+        for (TinyDataBean b : datas) {
+            if (b instanceof ChannelTinyBean) {//TODO 是否需要根据需要得到 url
+                ChannelEntity bannerEntity = new ChannelEntity(b.getChannel_name(), b.getIcon_url());
+                //TODO 这里设置 传递值
+                Map<String, Object> params = bannerEntity.params;
+                params.put("dec",b.getChannel_dec());
+                list.add(bannerEntity);
+            }
+            if (b instanceof GoodTinyBean) {
+                GoodsEntity goodsEntity = new GoodsEntity(((GoodTinyBean) b).getName(), ((GoodTinyBean) b).getUrl(), "立即购买", ((GoodTinyBean) b).getPrice(), ((GoodTinyBean) b).getOldPrice(), true);
+                list.add(goodsEntity);
             }
         }
-        mDelegateAdapter.addAdapters(adapters);
+        return list;
+    }
+
+    @NonNull
+    private List<BaseEntity> getSetEntities(String msg, DataBean bean) {
+        List<BaseEntity> tempList2 = new ArrayList<>();
+        List<TinyDataBean> datas = bean.getDatas();
+        for (TinyDataBean b : datas) {
+            if (b instanceof BannerTinyBean) {//TODO 是否需要根据需要得到 url
+                BannerEntity bannerEntity = new BannerEntity(((BannerTinyBean) b).getPic());
+                tempList2.add(bannerEntity);
+            }
+            if (b instanceof GoodTinyBean) {
+                GoodsEntity goodsEntity = new GoodsEntity(((GoodTinyBean) b).getName(), ((GoodTinyBean) b).getUrl(), "立即购买", ((GoodTinyBean) b).getPrice(), ((GoodTinyBean) b).getOldPrice(), true);
+                tempList2.add(goodsEntity);
+            }
+        }
+        List<BaseEntity> tempList3 = new ArrayList<>();
+        tempList3.add(new SetEntity(msg, tempList2));
+        return tempList3;
+    }
+
+    /**
+     * 标题数据创建
+     */
+    @NonNull
+    private List<BaseEntity> getTitleEntities(DataBean bean) {
+        TitleEntity entity = new TitleEntity(bean.getContent_name(), "更多...", true);
+        List<BaseEntity> tempList = new ArrayList<>();
+        tempList.add(entity);
+        return tempList;
     }
 
     @Override
@@ -229,9 +295,5 @@ public class NotificationsFragment extends BaseFragment {
         return R.layout.fragment_notifications;
     }
 
-    public static int dp2px(Context context, int dp) {
-        DisplayMetrics displayMetrics = context.getResources().getDisplayMetrics();
-        return (int) ((dp * displayMetrics.density) + 0.5);
-    }
 
 }

@@ -7,11 +7,11 @@ import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.haishengyue.beanlibrary.mallbeans.DataBean;
-import com.haishengyue.beanlibrary.mallbeans.TinyDataBean;
-import com.haishengyue.templatelibrary.ItemClickListener;
-import com.haishengyue.templatelibrary.SubViewHolder;
-import com.haishengyue.templatelibrary.factory.SingleGoodsLittleTemplateFactory;
+import com.haishengyue.templatelibrary.TemplateFactory;
+import com.haishengyue.templatelibrary.base.SubViewHolder;
+import com.haishengyue.templatelibrary.entity.BaseEntity;
+import com.haishengyue.templatelibrary.entity.SetEntity;
+import com.haishengyue.templatelibrary.interfaces.ItemClickListener;
 
 import java.util.List;
 
@@ -21,13 +21,13 @@ import java.util.List;
  * 只有一个recyclerView
  */
 
-public class HorizontalRecyclerHolder extends SubViewHolder<DataBean> {
+public class HorizontalRecyclerHolder extends SubViewHolder<SetEntity> {
     public HorizontalRecyclerHolder(View itemView) {
         super(itemView);
     }
 
     @Override
-    public void bindData(final Context context, DataBean t, int position) {
+    public void bindData(final Context context, SetEntity entity, int position) {
         RecyclerView recyclerView = (RecyclerView) itemView;
         itemView.setBackgroundColor(0xff00ff00);
         LinearLayoutManager manager = new LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false);
@@ -39,7 +39,7 @@ public class HorizontalRecyclerHolder extends SubViewHolder<DataBean> {
             }
 
         });
-        MyAdapter adapter = new MyAdapter(context, t.getDatas());
+        MyAdapter adapter = new MyAdapter(context, entity.getList());
         recyclerView.setAdapter(adapter);
 
     }
@@ -51,26 +51,50 @@ public class HorizontalRecyclerHolder extends SubViewHolder<DataBean> {
 
     private ItemClickListener mListener;
 
-    class MyAdapter extends RecyclerView.Adapter<SingleGoodsHolder> {
+    @Override
+    public void onClick(View v) {
+
+    }
+
+    @Override
+    public boolean onLongClick(View v) {
+        return false;
+    }
+
+    private class MyAdapter extends RecyclerView.Adapter<SubViewHolder> {
         Context context;
-        List<TinyDataBean> list;
+        List<BaseEntity> list;
 
-
-        MyAdapter(Context context, List<TinyDataBean> list) {
+        MyAdapter(Context context, List<BaseEntity> list) {
             this.context = context;
             this.list = list;
         }
 
         @Override
-        public SingleGoodsHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            return (SingleGoodsHolder) new SingleGoodsLittleTemplateFactory().getViewHolder(context);
+        public SubViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+            return TemplateFactory.getTemplateHolder(context, viewType);
         }
 
         @Override
-        public void onBindViewHolder(SingleGoodsHolder holder, int position) {
-            holder.setOnItemClickListener(mListener);
-            holder.itemView.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, 400));
-            holder.bindData(context, list.get(position), position);//这个 需要里面再次设置
+        public int getItemViewType(int position) {
+            return list.get(position).type;
+        }
+
+        @Override
+        public void onBindViewHolder(SubViewHolder holder, int position) {
+            holder.setOnItemClickListener(new ItemClickListener() {
+                @Override
+                public void onItemClick(View view, BaseEntity obj, int position) {
+                    if (mListener != null) mListener.onItemClick(view, obj, position);
+                }
+
+                @Override
+                public boolean onItemLongClick(View view, BaseEntity obj, int position) {
+                    return mListener != null && mListener.onItemLongClick(view, obj, position);
+                }
+            });
+
+            holder.bindData(context, list.get(position), position);
         }
 
         @Override
