@@ -1,1 +1,1 @@
-include ':app', ':beanlibrary', ':templatelibrary'
+include ':app', ':templatelibrary'
