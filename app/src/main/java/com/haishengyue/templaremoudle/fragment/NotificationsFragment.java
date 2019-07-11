@@ -19,9 +19,6 @@ import com.haishengyue.beanlibrary.mallbeans.tinybean.BannerTinyBean;
 import com.haishengyue.beanlibrary.mallbeans.tinybean.ChannelTinyBean;
 import com.haishengyue.beanlibrary.mallbeans.tinybean.GoodTinyBean;
 import com.haishengyue.templaremoudle.R;
-import com.haishengyue.templaremoudle.testData.DecodeUtils;
-import com.haishengyue.templaremoudle.testData.net.HttpCallBack;
-import com.haishengyue.templaremoudle.testData.net.HttpUtils;
 import com.haishengyue.templatelibrary.SubAdapter;
 import com.haishengyue.templatelibrary.TemplateUtils;
 import com.haishengyue.templatelibrary.entity.BannerEntity;
@@ -107,30 +104,6 @@ public class NotificationsFragment extends BaseFragment {
     private List<DataBean> dataBeen;
 
     private void initData() {
-        String url = "http://ceng.heysound.com:4000/api/test/result";
-        try {
-            HttpUtils.get(NotificationsFragment.this, url, null, new HttpCallBack() {
-                @Override
-                public void onSuccess(String msg, String data) {
-                    try {
-                        dataBeen = DecodeUtils.decodeJsonString(data);
-                        initAdapter();
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-
-
-                @Override
-                public void onFailure(String msg) {
-
-                }
-            });
-
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
 
     }
 
@@ -180,34 +153,15 @@ public class NotificationsFragment extends BaseFragment {
 
                         //TODO 还有一系列的判断条件
                         //"page":{"no":0,"size":1000}
-                        HashMap<String, Object> map = new HashMap<>();
-                        map.put("no", 0);
-                        map.put("size", 20);
-                        HashMap<String, Object> map2 = new HashMap<>();
-                        map2.put("page", map);
-                        Map<String, Object> stringObjectMap = HttpUtils.sortMapByKey(map2);
-                        final String s = HttpUtils.sortMapByKey2String(stringObjectMap);
+                        List<MallRecordsBean> records = new ArrayList<>();
 
-                        HttpUtils.post(this, "http://test.heysound.com/goods/listRc.do", null, null, s, new HttpCallBack() {
-                            @Override
-                            public void onSuccess(String msg, String data) {
-                                ResMallHome resMallHome = DecodeUtils.JsonToBean(data, ResMallHome.class);
-                                List<MallRecordsBean> records = resMallHome.getResult().getRecords();
-
-                                List<BaseEntity> list4 = new ArrayList<>();
-                                for (MallRecordsBean b : records) {
-                                    MallGoodsBean goods = b.getGoods();
-                                    GoodsEntity goodsEntity = new GoodsEntity(goods.getName(), goods.getLogo().getUrl(), "抢购", goods.getPrice(), goods.getOldPrice(), true);
-                                    list4.add(goodsEntity);
-                                }
-                                subAdapter.add(list4);
-                            }
-
-                            @Override
-                            public void onFailure(String msg) {
-
-                            }
-                        });
+                        List<BaseEntity> list4 = new ArrayList<>();
+                        for (MallRecordsBean b : records) {
+                            MallGoodsBean goods = b.getGoods();
+                            GoodsEntity goodsEntity = new GoodsEntity(goods.getName(), goods.getLogo().getUrl(), "抢购", goods.getPrice(), goods.getOldPrice(), true);
+                            list4.add(goodsEntity);
+                        }
+                        subAdapter.add(list4);
                         break;
 
                 }
@@ -249,7 +203,7 @@ public class NotificationsFragment extends BaseFragment {
                 ChannelEntity bannerEntity = new ChannelEntity(b.getChannel_name(), b.getIcon_url());
                 //TODO 这里设置 传递值
                 Map<String, Object> params = bannerEntity.params;
-                params.put("dec",b.getChannel_dec());
+                params.put("dec", b.getChannel_dec());
                 list.add(bannerEntity);
             }
             if (b instanceof GoodTinyBean) {
