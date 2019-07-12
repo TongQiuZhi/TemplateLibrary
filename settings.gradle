@@ -1,1 +1,1 @@
-include ':app', ':templatelibrary'
+include ':app', ':uiVlayout'

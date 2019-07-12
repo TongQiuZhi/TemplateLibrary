@@ -42,5 +42,5 @@ dependencies {
     implementation dpc.okhttputils
     implementation dpc.fastjson
     implementation dpc.glide
-    implementation project(path: ':templatelibrary')
+    implementation project(path: ':uiVlayout')
 }
